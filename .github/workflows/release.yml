@@ -19,6 +19,7 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '8.0.x'
+      timeout-minutes: 10
     
     - name: Get version from tag
       id: get_version
