@@ -2,6 +2,9 @@
 
 <div align="center">
 
+[![Build and Test](https://github.com/paulobarbassa/cf-tunnel-kit/actions/workflows/build.yml/badge.svg)](https://github.com/paulobarbassa/cf-tunnel-kit/actions/workflows/build.yml)
+[![Release](https://github.com/paulobarbassa/cf-tunnel-kit/actions/workflows/release.yml/badge.svg)](https://github.com/paulobarbassa/cf-tunnel-kit/actions/workflows/release.yml)
+[![GitHub release](https://img.shields.io/github/v/release/paulobarbassa/cf-tunnel-kit?style=flat-square)](https://github.com/paulobarbassa/cf-tunnel-kit/releases)
 [![.NET](https://img.shields.io/badge/.NET-8.0-512BD4?style=flat-square&logo=dotnet)](https://dotnet.microsoft.com/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey?style=flat-square)](https://github.com/paulobarbassa/cf-tunnel-kit)

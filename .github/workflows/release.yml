@@ -1,0 +1,83 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+    
+    - name: Get version from tag
+      id: get_version
+      run: |
+        $version = $env:GITHUB_REF -replace 'refs/tags/v', ''
+        echo "VERSION=$version" >> $env:GITHUB_OUTPUT
+        echo "Version: $version"
+      shell: pwsh
+    
+    - name: Restore dependencies
+      run: dotnet restore src/CfTunnel.Console/CfTunnel.Console.csproj
+    
+    - name: Build and Publish - Windows x64
+      run: dotnet publish src/CfTunnel.Console/CfTunnel.Console.csproj -c Release -o release/win-x64 -r win-x64 --self-contained false -p:PublishSingleFile=true
+    
+    - name: Build and Publish - Linux x64
+      run: dotnet publish src/CfTunnel.Console/CfTunnel.Console.csproj -c Release -o release/linux-x64 -r linux-x64 --self-contained false -p:PublishSingleFile=true
+    
+    - name: Build and Publish - macOS x64
+      run: dotnet publish src/CfTunnel.Console/CfTunnel.Console.csproj -c Release -o release/osx-x64 -r osx-x64 --self-contained false -p:PublishSingleFile=true
+    
+    - name: Build and Publish - macOS ARM64
+      run: dotnet publish src/CfTunnel.Console/CfTunnel.Console.csproj -c Release -o release/osx-arm64 -r osx-arm64 --self-contained false -p:PublishSingleFile=true
+    
+    - name: Create ZIP files
+      run: |
+        Compress-Archive -Path release/win-x64/* -DestinationPath cf-tunnel-win-x64.zip
+        Compress-Archive -Path release/linux-x64/* -DestinationPath cf-tunnel-linux-x64.zip
+        Compress-Archive -Path release/osx-x64/* -DestinationPath cf-tunnel-osx-x64.zip
+        Compress-Archive -Path release/osx-arm64/* -DestinationPath cf-tunnel-osx-arm64.zip
+      shell: pwsh
+    
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          cf-tunnel-win-x64.zip
+          cf-tunnel-linux-x64.zip
+          cf-tunnel-osx-x64.zip
+          cf-tunnel-osx-arm64.zip
+        draft: false
+        prerelease: false
+        generate_release_notes: true
+        body: |
+          ## 🚀 Release ${{ steps.get_version.outputs.VERSION }}
+          
+          ### 📦 Downloads
+          
+          - **Windows x64**: `cf-tunnel-win-x64.zip`
+          - **Linux x64**: `cf-tunnel-linux-x64.zip`
+          - **macOS x64 (Intel)**: `cf-tunnel-osx-x64.zip`
+          - **macOS ARM64 (Apple Silicon)**: `cf-tunnel-osx-arm64.zip`
+          
+          ### 📝 Installation
+          
+          1. Download the appropriate file for your platform
+          2. Extract the ZIP file
+          3. Run the executable
+          
+          **Note**: Requires .NET 8.0 Runtime installed on your system.
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

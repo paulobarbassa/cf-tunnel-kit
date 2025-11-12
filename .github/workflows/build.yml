@@ -1,0 +1,49 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        dotnet-version: ['8.0.x']
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ matrix.dotnet-version }}
+    
+    - name: Restore dependencies
+      run: dotnet restore src/CfTunnelKit.Core/CfTunnel.Core.csproj
+    
+    - name: Build Core
+      run: dotnet build src/CfTunnelKit.Core/CfTunnel.Core.csproj --configuration Release --no-restore
+    
+    - name: Build Console
+      run: dotnet build src/CfTunnel.Console/CfTunnel.Console.csproj --configuration Release --no-restore
+    
+    - name: Run tests (if exists)
+      run: dotnet test --configuration Release --no-build --verbosity normal
+      continue-on-error: true
+    
+    - name: Publish artifacts (Windows only)
+      if: matrix.os == 'windows-latest'
+      run: |
+        dotnet publish src/CfTunnel.Console/CfTunnel.Console.csproj -c Release -o publish/win-x64 -r win-x64 --self-contained false
+        dotnet publish src/CfTunnel.Console/CfTunnel.Console.csproj -c Release -o publish/linux-x64 -r linux-x64 --self-contained false
+    
+    - name: Upload build artifacts (Windows only)
+      if: matrix.os == 'windows-latest'
+      uses: actions/upload-artifact@v4
+      with:
+        name: cf-tunnel-builds
+        path: publish/
